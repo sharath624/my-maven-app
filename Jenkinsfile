@@ -23,7 +23,7 @@ pipeline {
             steps {
                 script {
                     def warFile = "target/myapp.war"
-                    def tomcatURL = "http://http://172.31.67.95:8080/manager/text"
+                    def tomcatURL = "http://172.31.67.95:8080/manager/text"
 
                     sh """
                     curl --upload-file ${warFile} "${tomcatURL}/deploy?path=/myapp&update=true" \
