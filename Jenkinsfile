@@ -1,15 +1,12 @@
 pipeline {
-
     agent any
 
     tools {
-        maven 'Maven 3.8.7'
-        jdk 'Java 11'
+        maven 'Maven'      // Jenkins → Global Tool Configuration → Maven
     }
 
     environment {
-        TOMCAT_URL = 'http://<Tomcat-IP>:8080'
-        APP_PATH = '/mywebapp'
+        TOMCAT_IP = "172.31.67.95"   // Put your Tomcat private IP
     }
 
     stages {
@@ -17,41 +14,38 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/<your-username>/<your-repo>.git'
+                    url: 'https://github.com/sharath624/my-maven-app.git'
             }
         }
 
-        stage('Build Maven Project') {
+        stage('Build Artifact') {
             steps {
                 sh 'mvn clean package'
-            }
-        }
-
-        stage('Archive WAR') {
-            steps {
-                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'tomcat-creds',
-                                usernameVariable: 'USER',
-                                passwordVariable: 'PASS')]) {
+                                                 usernameVariable: 'TUSER',
+                                                 passwordVariable: 'TPASS')]) {
 
-                    sh '''
-                        WAR=$(ls target/*.war)
-                        echo "Deploying application..."
-                        curl --fail -u $USER:$PASS -T $WAR \
-                        "$TOMCAT_URL/manager/text/deploy?path=$APP_PATH&update=true"
-                    '''
+                    sh """
+                    curl -u $TUSER:$TPASS \
+                    --upload-file target/*.war \
+                    "http://${TOMCAT_IP}:8080/manager/text/deploy?path=/myapp&update=true"
+                    """
                 }
             }
         }
     }
 
     post {
-        success { echo "Deployment successful!" }
-        failure { echo "Deployment failed!" }
+        success {
+            echo "Deployment successful!"
+        }
+        failure {
+            echo "Deployment failed!"
+        }
     }
 }
