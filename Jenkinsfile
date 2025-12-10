@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven'      // Jenkins → Global Tool Configuration → Maven
+        maven 'Maven 3.8.7'      // Jenkins → Global Tool Configuration → Maven
     }
 
     environment {
